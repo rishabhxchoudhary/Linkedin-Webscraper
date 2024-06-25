@@ -72,6 +72,9 @@ class LinkedinBot:
                 login_button.click()
                 time.sleep(0.25)
                 print("Logged in to Linkedin using credentials.")
+                pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+                print("Rerun the script with retrieveCookies = False to use cookies next time.")
+                exit()
             except TimeoutException:
                 print("TimeoutException: Could not find login fields")
                 exit()
