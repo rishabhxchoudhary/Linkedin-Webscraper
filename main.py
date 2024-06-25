@@ -82,13 +82,13 @@ class LinkedinBot:
                 print("KeyboardInterrupt: Exiting")
                 pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
                 exit()
-    def work(self,num_pages,connections_per_page):
+    def work(self,num_pages):
         for n in range(1, num_pages+1):
             self.browser.get("https://www.linkedin.com/search/results/people/?network=%5B%22F%22%5D&origin=FACETED_SEARCH&page=" + str(n))
             time.sleep(2)
             all_buttons = driver.find_elements(By.TAG_NAME, "button")
             message_buttons = [btn for btn in all_buttons if btn.text == "Message"]
-            for i in range(connections_per_page):
+            for i in range(len(message_buttons)):
                 self.browser.execute_script("arguments[0].click();", message_buttons[i])
                 time.sleep(2)
 
@@ -130,5 +130,5 @@ if __name__ == "__main__" :
     assert LINKEDIN_USERNAME, "Please set the LINKEDIN_USERNAME environment variable"
     assert LINKEDIN_PASSWORD, "Please set the LINKEDIN_PASSWORD environment variable"
     bot = LinkedinBot(LINKEDIN_USERNAME, LINKEDIN_PASSWORD)
-    bot.work(100,10)
+    bot.work(100)
 
