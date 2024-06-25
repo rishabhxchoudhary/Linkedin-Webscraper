@@ -7,6 +7,12 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium_stealth import stealth
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+
+import random
 import pickle
 
 retrieveCookies = False
@@ -73,8 +79,45 @@ class LinkedinBot:
                 print("KeyboardInterrupt: Exiting")
                 pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
                 exit()
-    def work(self):
-        time.sleep(50)
+    def work(self,num_pages,connections_per_page):
+        for n in range(1, num_pages+1):
+            self.browser.get("https://www.linkedin.com/search/results/people/?network=%5B%22F%22%5D&origin=FACETED_SEARCH&page=" + str(n))
+            time.sleep(2)
+            all_buttons = driver.find_elements(By.TAG_NAME, "button")
+            message_buttons = [btn for btn in all_buttons if btn.text == "Message"]
+            for i in range(connections_per_page):
+                self.browser.execute_script("arguments[0].click();", message_buttons[i])
+                time.sleep(2)
+
+                main_div = self.browser.find_element("xpath", "//div[starts-with(@class, 'msg-form__msg-content-container')]")
+                self.browser.execute_script("arguments[0].click();", main_div)
+
+                paragraphs = self.browser.find_elements(By.TAG_NAME, "p")
+                all_span = self.browser.find_elements(By.TAG_NAME, "span")
+                all_span = [s for s in all_span if s.get_attribute("aria-hidden") == "true"]
+
+                idx = [*range(3,23,2)]
+                greetings = ["Hello", "Hi", "Hey", "Ahoy", "Yo yo", "Sup"]
+                all_names = []
+                
+                for j in idx:
+                    name = all_span[j].text.split(" ")[0]
+                    all_names.append(name)
+                    
+                greetings_idx = random.randint(0, len(greetings)-1)
+                message = greetings[greetings_idx] + " " + all_names[i] + ", Sorry, I didn't mean to bother you, I'm just building a Linkedin Web Scraper Bot and testing its' capabilities."
+                paragraphs[-5].clear()
+                paragraphs[-5].send_keys(message)
+                time.sleep(2)
+
+                close_button = driver.find_element(By.XPATH, "//button[.//span[text()='Close your draft conversation']]")
+                self.browser.execute_script("arguments[0].click();", close_button)
+                try:
+                    discard_button = driver.find_element(By.XPATH, "//button[.//span[text()='Discard']]")
+                    self.browser.execute_script("arguments[0].click();", discard_button)
+                    time.sleep(2)
+                except:
+                    pass
         pass
 
 if __name__ == "__main__" :
@@ -84,5 +127,5 @@ if __name__ == "__main__" :
     assert LINKEDIN_USERNAME, "Please set the LINKEDIN_USERNAME environment variable"
     assert LINKEDIN_PASSWORD, "Please set the LINKEDIN_PASSWORD environment variable"
     bot = LinkedinBot(LINKEDIN_USERNAME, LINKEDIN_PASSWORD)
-    bot.work()
+    bot.work(100,10)
 
